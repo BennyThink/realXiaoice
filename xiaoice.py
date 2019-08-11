@@ -92,7 +92,7 @@ def chat(msg: str) -> str:
         logging.info('Getting responses by polling...')
         r = s.get(RECV, headers=cur_headers).json()
         logging.info('Raw response from API: {}'.format(r))
-        response = r['data']['msgs'][0]['text']
+        response = r.get('data', {}).get('msgs', {})[0]['text']
         if response != msg:
             break
         time.sleep(random.random())

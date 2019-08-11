@@ -52,11 +52,12 @@ class ChatHandler(BaseHandler):
             user_input = None
         if user_input:
             try:
-                response = chat(user_input)
+                response = {"text": chat(user_input), "debug": ""}
             except Exception as e:
-                response = str(e)
                 logging.error(traceback.format_exc())
-            return {"text": response, "debug": ""}
+                response = {"text": "", "debug": str(e)}
+
+            return response
         else:
             self.set_status(400)
             return {"text": "", "debug": "param text is missing"}
