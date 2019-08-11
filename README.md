@@ -40,13 +40,15 @@ After=network.target network-online.target nss-lookup.target
 
 [Service]
 User=nobody
-Group=nobody
 Restart=on-failure
 Type=simple
+
+WorkingDirectory=/path/to/realXiaoice
 ExecStart=/usr/bin/python3 /path/to/realXiaoice/ice_server.py
 
 [Install]
 WantedBy=multi-user.target
+
 ```
 
 # API
