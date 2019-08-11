@@ -36,7 +36,8 @@ def __read_headers():
     return real
 
 
-def realtime_csrf():
+def __realtime_csrf():
+    # get realtime csrf token every 30 min
     logging.info('Get realtime csrf token')
     cookie_line = __read_headers().get('Cookie').split(':')[-1].strip()
     r = s.get(RECV, headers={"Cookie": cookie_line})
@@ -47,7 +48,7 @@ def __renew_headers():
     logging.info('Renewwing headers.txt')
     old_headers = __read_headers()
     old_csrf = old_headers.get('X-XSRF-TOKEN')
-    new_csrf = realtime_csrf()
+    new_csrf = __realtime_csrf()
     old_headers['X-XSRF-TOKEN'] = new_csrf
     old_headers['Cookie'] = old_headers['Cookie'].replace(old_csrf, new_csrf)
     # write files
@@ -59,7 +60,12 @@ def __renew_headers():
     return old_headers
 
 
-def chat(msg):
+def chat(msg: str) -> str:
+    """
+    chat program
+    :param msg: message send to xiaoice
+    :return: her response
+    """
     logging.info('Getting headers from headers.txt')
     cur_headers = __read_headers()
     data = dict(uid=5175429989,

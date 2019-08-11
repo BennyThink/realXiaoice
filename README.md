@@ -7,8 +7,8 @@
 Python 3
 
 # 依赖
-tornnado
-requests
+* tornado
+* requests
 
 # 使用方法
 ## 1. 领养小冰 

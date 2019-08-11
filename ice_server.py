@@ -11,6 +11,7 @@ import logging
 import os
 from platform import uname
 import json
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from tornado import web, ioloop, httpserver, gen, options
 from tornado.concurrent import run_on_executor
@@ -50,7 +51,12 @@ class ChatHandler(BaseHandler):
         else:
             user_input = None
         if user_input:
-            return {"text": chat(user_input), "debug": ""}
+            try:
+                response = chat(user_input)
+            except Exception as e:
+                response = str(e)
+                logging.error(traceback.format_exc())
+            return {"text": response, "debug": ""}
         else:
             self.set_status(400)
             return {"text": "", "debug": "param text is missing"}
