@@ -1,0 +1,1 @@
+把你的从浏览器中复制的headers粘贴到这个文件里，除去Content-Length以外
