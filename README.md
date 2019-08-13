@@ -121,7 +121,7 @@ HTTP 500
 
 
 # TODO
-- [ ] 增加访问限制
+- [x] 增加访问限制
 
 # Credits
 https://github.com/yanwii/msxiaoiceapi

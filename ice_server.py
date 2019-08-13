@@ -18,6 +18,8 @@ from tornado.concurrent import run_on_executor
 
 from xiaoice import chat
 
+ALLOWED_IPS = []
+
 
 class BaseHandler(web.RequestHandler):
     def data_received(self, chunk):
@@ -38,9 +40,18 @@ class IndexHandler(BaseHandler):
 class ChatHandler(BaseHandler):
     executor = ThreadPoolExecutor(max_workers=20)
 
+    def accessibility(self, ip):
+        if ALLOWED_IPS and ip not in ALLOWED_IPS:
+            logging.warning('Access denied for {}'.format(ip))
+            self.set_status(403)
+            return {"text": "", "debug": "Access denied."}
+
     @run_on_executor
     def run_request(self):
         user_ip = self.request.headers.get("X-Real-IP", "") or self.request.remote_ip
+        denied = self.accessibility(user_ip)
+        if denied:
+            return denied
 
         if self.request.method == 'GET':
             user_input = self.get_query_argument('text', None)
@@ -50,17 +61,18 @@ class ChatHandler(BaseHandler):
             user_input = self.get_argument('text', None)
         else:
             user_input = None
+
         if user_input:
             try:
                 response = {"text": chat(user_input), "debug": ""}
             except Exception as e:
                 logging.error(traceback.format_exc())
+                self.set_status(500)
                 response = {"text": "", "debug": str(e)}
-
-            return response
         else:
             self.set_status(400)
-            return {"text": "", "debug": "param text is missing"}
+            response = {"text": "", "debug": "param text is missing"}
+        return response
 
     @gen.coroutine
     def get(self):
@@ -110,9 +122,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     options.define("p", default=6789, help="running port", type=int)
     options.define("h", default='127.0.0.1', help="listen address", type=str)
-    options.define("a", default='all', help="address to access this server", type=str)
+    options.define("a", default='', help="Allowed IPs to access this server,split by comma", type=str)
     options.parse_command_line()
     p = options.options.p
     h = options.options.h
     allow = options.options.a
+    if allow:
+        ALLOWED_IPS = allow.split(',')
     RunServer.run_server(port=p, host=h)
