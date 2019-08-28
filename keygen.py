@@ -10,6 +10,7 @@ codes = [item.replace('\r', '').replace('\n', '')
          for item in open('key.txt', encoding='u8').readlines()]
 print("Current: ", codes)
 f = open('key.txt', 'a', encoding='u8')
-f.write('\n' + uuid.uuid4().hex[:5])
+auth = uuid.uuid4().hex[:5]
+f.write('\n' + auth)
 f.close()
-print("Your new auth code is %s" % hex)
+print("Your new auth code is %s" % auth)
