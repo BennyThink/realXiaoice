@@ -120,8 +120,22 @@ HTTP 500
 ![](assets/183303.png)
 
 
-# TODO
-- [x] 增加访问限制
+# 附加功能
+## IP地址访问限制
+默认关闭，只允许某几个IP访问可以使用如下方式
+```bash
+python ice_server.py -a=127.0.0.1,1.1.1.1
+```
+## 授权码限制
+默认关闭，编辑`key.txt`一行一个添加授权码，或者运行`keygen.py`自动生成
+开启方式
+```bash
+python ice_server --auth
+```
+请求时需要在参数中携带auth，例如：
+```bash
+curl http://127.0.0.1/chat?text=hello&auth=123456
+```
 
 # Credits
 https://github.com/yanwii/msxiaoiceapi

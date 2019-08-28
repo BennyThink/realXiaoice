@@ -18,7 +18,7 @@ from tornado.concurrent import run_on_executor
 
 from xiaoice import chat
 
-ALLOWED_IPS = []
+ALLOWED_IPS, AUTH = [], False
 
 
 class BaseHandler(web.RequestHandler):
@@ -40,28 +40,41 @@ class IndexHandler(BaseHandler):
 class ChatHandler(BaseHandler):
     executor = ThreadPoolExecutor(max_workers=20)
 
-    def accessibility(self, ip):
-        if ALLOWED_IPS and ip not in ALLOWED_IPS:
+    def get_correct_argument(self, name):
+        try:
+            if self.request.headers.get('Content-Type') == 'application/json' \
+                    and self.request.body:
+                value = json.loads(self.request.body).get(name)
+            else:
+                value = self.get_argument(name, None)
+            return value
+        except ValueError as e:
+            logging.error('Failed to extract arguments {}'.format(e))
+
+    def accessibility(self):
+        ip = self.request.headers.get("X-Real-IP", "") or self.request.remote_ip
+        auth_code = self.get_correct_argument('auth') or ''
+
+        msg = {}
+        correct_auth = [item.replace('\r', '').replace('\n', '')
+                        for item in open('key.txt', encoding='u8').readlines()]
+        if AUTH and auth_code not in correct_auth:
+            msg = {"text": "", "debug": "Bad auth code."}
+        elif ALLOWED_IPS and ip not in ALLOWED_IPS:
+            msg = {"text": "", "debug": "Your IP is not allowed to access this API."}
+
+        if msg:
             logging.warning('Access denied for {}'.format(ip))
             self.set_status(403)
-            return {"text": "", "debug": "Access denied."}
+            return msg
 
     @run_on_executor
     def run_request(self):
-        user_ip = self.request.headers.get("X-Real-IP", "") or self.request.remote_ip
-        denied = self.accessibility(user_ip)
+        denied = self.accessibility()
         if denied:
             return denied
 
-        if self.request.method == 'GET':
-            user_input = self.get_query_argument('text', None)
-        elif self.request.headers.get('Content-Type') == 'application/json' and self.request.body:
-            user_input = json.loads(self.request.body).get('text')
-        elif self.request.method == 'POST':
-            user_input = self.get_argument('text', None)
-        else:
-            user_input = None
-
+        user_input = self.get_correct_argument('text')
         if user_input:
             try:
                 response = {"text": chat(user_input), "debug": ""}
@@ -71,7 +84,7 @@ class ChatHandler(BaseHandler):
                 response = {"text": "", "debug": str(e)}
         else:
             self.set_status(400)
-            response = {"text": "", "debug": "param text is missing"}
+            response = {"text": "", "debug": "Wrong params."}
         return response
 
     @gen.coroutine
@@ -123,10 +136,12 @@ if __name__ == "__main__":
     options.define("p", default=6789, help="running port", type=int)
     options.define("h", default='127.0.0.1', help="listen address", type=str)
     options.define("a", default='', help="Allowed IPs to access this server,split by comma", type=str)
+    options.define("auth", default=False, help="Enable auth? default is set to false", type=bool)
     options.parse_command_line()
     p = options.options.p
     h = options.options.h
     allow = options.options.a
+    AUTH = options.options.auth
     if allow:
         ALLOWED_IPS = allow.split(',')
     RunServer.run_server(port=p, host=h)
