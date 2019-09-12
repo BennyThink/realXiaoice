@@ -1,14 +1,14 @@
 Accept: application/json, text/plain, */*
 Accept-Encoding: gzip, deflate, br
 Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
-Connection: keep-alive
 Content-Type: application/x-www-form-urlencoded
-Cookie: 1234
+Cookie: 123456
 DNT: 1
-Host: m.weibo.cn
-MWeibo-Pwa: 1
+mweibo-pwa: 1
 Origin: https://m.weibo.cn
 Referer: https://m.weibo.cn/message/chat?uid=5175429989&name=msgbox
-User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 12_1_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1
+sec-fetch-mode: cors
+sec-fetch-site: same-origin
+User-Agent: Mozilla/5.0 (X11; Linux i686; rv:69.0) Gecko/20100101 Firefox/69.0
 X-Requested-With: XMLHttpRequest
-X-XSRF-TOKEN:421ee0
+X-XSRF-TOKEN: 3f1111
