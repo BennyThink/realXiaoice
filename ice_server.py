@@ -107,8 +107,7 @@ class RunServer:
                 ]
     settings = {
         "cookie_secret": "5Li05DtnQewDZq1mDVB3HAAhFqUu2vD2USnqezkeu+M=",
-        "xsrf_cookies": False,
-        "autoreload": True
+        "xsrf_cookies": False
     }
 
     application = web.Application(handlers, **settings)
