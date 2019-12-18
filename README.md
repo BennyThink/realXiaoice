@@ -23,7 +23,7 @@ Python 3
 ![](assets/182123.png)
 
 ## 4. 安装Python 3与依赖
-安装适合自己平台的Python，然后
+安装适合自己平台的Python，需要3.5+之后的版本。为了后续兼容性考虑，选择3.6或3.7吧。然后
 ```bash
 pip install tornado requests
 ``` 
