@@ -19,7 +19,7 @@ Python 3
 打开和小冰的私信页面，按F12打开控制台，切换到Network，并选中XHR，然后和小冰说句话，点开名为send的请求
 
 复制全部Request Headers中**除了Content-Length以外所有行**，粘贴到headers.txt中
-**请注意headers.txt的格式，注意大小写**
+**请注意headers.txt的格式，注意大小写,`Cookie`和`X-XSRF-TOKEN`需要大写**
 ![](assets/182123.png)
 
 ## 4. 安装Python 3与依赖
@@ -138,7 +138,8 @@ curl http://127.0.0.1/chat?text=hello&auth=123456
 ```
 
 # Credits
-https://github.com/yanwii/msxiaoiceapi
+* https://github.com/yanwii/msxiaoiceapi
+* [https://github.com/BelinChung](BelinChung)
 
 
 # License

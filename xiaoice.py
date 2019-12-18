@@ -94,7 +94,7 @@ def chat(msg: str) -> str:
     while 1:
         if polling_count >= 20:
             last_message['text'] = ''
-            logging.info('Last answer message fetch failed')
+            logging.warning('Last answer message fetch failed')
             break
         logging.info('Getting responses by polling...')
         r = s.get(RECV, headers=cur_headers).json()
