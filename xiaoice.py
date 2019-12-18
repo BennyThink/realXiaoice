@@ -91,12 +91,12 @@ def chat(msg: str) -> str:
     while 1:
         logging.info('Getting responses by polling...')
         r = s.get(RECV, headers=cur_headers).json()
-        logging.info('Raw response from API: {}'.format(r))
-        response = r.get('data', {}).get('msgs', {})[0]['text']
-        if response != msg:
+        last_message = r.get('data', {}).get('msgs', {})[0]
+        if last_message['sender_id'] == 5175429989:
+            logging.info('Fetch last message: {}'.format(last_message))
             break
         time.sleep(random.random())
-    return response
+    return last_message['text']
 
 
 if __name__ == '__main__':
