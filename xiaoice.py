@@ -88,13 +88,20 @@ def chat(msg: str) -> str:
 
     # get response
     time.sleep(random.random())
+    polling_count = 0
+    last_message = {}
     while 1:
+        if polling_count >= 20:
+            last_message['text'] = ''
+            logging.info('Last answer message fetch failed')
+            break
         logging.info('Getting responses by polling...')
         r = s.get(RECV, headers=cur_headers).json()
         last_message = r.get('data', {}).get('msgs', {})[0]
         if last_message['sender_id'] == 5175429989:
             logging.info('Fetch last message: {}'.format(last_message))
             break
+        polling_count += 1
         time.sleep(random.random())
     return last_message['text']
 
