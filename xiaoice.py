@@ -8,6 +8,7 @@
 __author__ = "Benny <benny.think@gmail.com>"
 
 import time
+import base64
 import logging
 import random
 import requests
@@ -103,6 +104,14 @@ def chat(msg: str) -> str:
             break
         polling_count += 1
         time.sleep(random.random())
+    
+    # if the answer is an image file
+    if 'attachment' in last_message:
+        attachment_uri = last_message['attachment']['original_image']['url']
+        attachment_ext = last_message['attachment']['extension']
+        base64_image = base64.b64encode(s.get(attachment_uri, headers=cur_headers).content)
+        last_message['text'] = 'data:image/' + attachment_ext + ';base64,' + str(base64_image, encoding = 'utf-8')
+    
     return last_message['text']
 
 
