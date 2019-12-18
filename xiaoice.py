@@ -8,6 +8,7 @@
 __author__ = "Benny <benny.think@gmail.com>"
 
 import time
+import base64
 import logging
 import random
 import requests
@@ -88,15 +89,30 @@ def chat(msg: str) -> str:
 
     # get response
     time.sleep(random.random())
+    polling_count = 0
+    last_message = {}
     while 1:
+        if polling_count >= 20:
+            last_message['text'] = ''
+            logging.info('Last answer message fetch failed')
+            break
         logging.info('Getting responses by polling...')
         r = s.get(RECV, headers=cur_headers).json()
-        logging.info('Raw response from API: {}'.format(r))
-        response = r.get('data', {}).get('msgs', {})[0]['text']
-        if response != msg:
+        last_message = r.get('data', {}).get('msgs', {})[0]
+        if last_message['sender_id'] == 5175429989:
+            logging.info('Fetch last message: {}'.format(last_message))
             break
+        polling_count += 1
         time.sleep(random.random())
-    return response
+    
+    # if the answer is an image file
+    if 'attachment' in last_message:
+        attachment_uri = last_message['attachment']['original_image']['url']
+        attachment_ext = last_message['attachment']['extension']
+        base64_image = base64.b64encode(s.get(attachment_uri, headers=cur_headers).content)
+        last_message['text'] = 'data:image/' + attachment_ext + ';base64,' + str(base64_image, encoding = 'utf-8')
+    
+    return last_message['text']
 
 
 if __name__ == '__main__':
