@@ -4,7 +4,7 @@
 来源为新浪微博
 
 # 环境
-Python 3
+Python 3.5+
 
 # 依赖
 * tornado
@@ -139,7 +139,7 @@ curl http://127.0.0.1/chat?text=hello&auth=123456
 
 # Credits
 * https://github.com/yanwii/msxiaoiceapi
-* [https://github.com/BelinChung](BelinChung)
+* [BelinChung](https://github.com/BelinChung)
 
 
 # License
