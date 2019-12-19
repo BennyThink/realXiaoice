@@ -7,10 +7,12 @@
 
 __author__ = "Benny <benny.think@gmail.com>"
 
-import time
 import base64
 import logging
 import random
+import re
+import time
+
 import requests
 
 # from config import cookies
@@ -104,15 +106,35 @@ def chat(msg: str) -> str:
             break
         polling_count += 1
         time.sleep(random.random())
-    
+
     # if the answer is an image file
     if 'attachment' in last_message:
         attachment_uri = last_message['attachment']['original_image']['url']
         attachment_ext = last_message['attachment']['extension']
         base64_image = base64.b64encode(s.get(attachment_uri, headers=cur_headers).content)
-        last_message['text'] = 'data:image/' + attachment_ext + ';base64,' + str(base64_image, encoding = 'utf-8')
-    
-    return last_message['text']
+        last_message['text'] = 'data:image/' + attachment_ext + ';base64,' + str(base64_image, encoding='utf-8')
+
+    return __remove_bad_html(last_message['text'])
+
+
+def __remove_bad_html(msg: str) -> str:
+    # remove html code in chat message. If fails, this function will return original chat message.
+    logging.info("removing bad urls in chat message")
+    non_backslash = msg.replace(r'\/', '/')
+    try:
+        text_list = re.findall(r'(.*)<a.*', non_backslash)
+        text = text_list[0]
+        url_list = re.findall(r'(?:(?:https?|ftp)://)+[\w/\-?=%.]+\.[\w/\-?=%.]+', non_backslash)
+        url = url_list[0]
+        logging.info("All right, you are so 'funny' weibo:-(")
+    except IndexError:
+        logging.info('It seems like a normal text without any html codes.')
+        text = ''
+        url = ''
+    if url and text:
+        return text + url
+    else:
+        return non_backslash
 
 
 if __name__ == '__main__':
