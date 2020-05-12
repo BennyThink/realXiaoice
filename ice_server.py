@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 from tornado import web, ioloop, httpserver, gen, options
 from tornado.concurrent import run_on_executor
 
-from xiaoice import chat
+from xiaoice import chat,chatWithImg
 
 ALLOWED_IPS, AUTH = [], False
 
@@ -75,9 +75,13 @@ class ChatHandler(BaseHandler):
             return denied
 
         user_input = self.get_correct_argument('text')
+        user_input_type = self.get_correct_argument('type')
         if user_input:
             try:
-                response = {"text": chat(user_input), "debug": ""}
+                if user_input_type == 'text':
+                    response = {"text": chat(user_input), "debug": ""}
+                elif user_input_type == 'img':
+                    response = {"text": chatWithImg(user_input), "debug": ""}
             except Exception as e:
                 logging.error(traceback.format_exc())
                 self.set_status(500)
