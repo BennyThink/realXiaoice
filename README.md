@@ -54,10 +54,12 @@ WantedBy=multi-user.target
 # API
 ## 请求格式
 接受GET、POST url-encoded-data和POST json，示例如下：
+
+对于文字
 ```http request
 
-# curl http://127.0.0.1:6789/chat?text=hello
-GET http://127.0.0.1:6789/chat?text=hello
+# curl http://127.0.0.1:6789/chat?text=hello&type=text
+GET http://127.0.0.1:6789/chat?text=hello&type=text
 
 ###
 
@@ -66,22 +68,55 @@ POST http://127.0.0.1:6789/chat
 Content-Type: application/json
 
 {
-  "text": "what"
+  "text": "what",
+  "type":"text"
 }
 
 
 ###
 
 
-# curl -d "text=hi" http://127.0.0.1:6789/chat
+# curl -d 'text=hi&type=text' http://127.0.0.1:6789/chat
 POST http://127.0.0.1:6789/chat
 Content-Type: application/x-www-form-urlencoded
 
 text=hi
+type=text
+
+###
+
+```
+
+对于图片(暂时只支持jpg)
+
+```http request
+
+# curl http://127.0.0.1:6789/chat?text=/tmp/test.jpg&type=img
+GET http://127.0.0.1:6789/chat?text=/tmp/test.jpg&type=img
 
 ###
 
 
+POST http://127.0.0.1:6789/chat
+Content-Type: application/json
+
+{
+  "text": "/tmp/test.jpg",
+  "type":"img"
+}
+
+
+###
+
+
+# curl -d "text=/tmp/test.jpg&typt=img" http://127.0.0.1:6789/chat
+POST http://127.0.0.1:6789/chat
+Content-Type: application/x-www-form-urlencoded
+
+text=/tmp/test.jpg
+type=img
+
+###
 
 ```
 
@@ -117,7 +152,7 @@ HTTP 500
 
 # 效果图
 
-![](assets/183303.png)
+![](assets/20051201.png)
 
 
 # 附加功能
