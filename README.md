@@ -175,7 +175,7 @@ curl http://127.0.0.1/chat?text=hello&auth=123456
 # Credits
 * https://github.com/yanwii/msxiaoiceapi
 * [BelinChung](https://github.com/BelinChung)
-
+* [mgsky1](https://github.com/mgsky1)
 
 # License
 MIT
