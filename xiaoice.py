@@ -9,10 +9,10 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import base64
 import logging
+import os
 import random
 import re
 import time
-import os
 
 import requests
 
@@ -64,21 +64,22 @@ def __renew_headers():
         f.write(text)
     return old_headers
 
-def __sendImg(imgPath:str) -> str:
+
+def __send_img(img_path: str) -> str:
     logging.info('Begin to send Image to xiaoIce')
     cur_headers = __read_headers()
     cur_headers.pop('content-type')
-    imgName = os.path.basename(imgPath)
-    # imgType = os.path.splitext(imgPath)[1]
+    img_name = os.path.basename(img_path)
+    # imgType = os.path.splitext(img_path)[1]
     files = {
-        'file': (imgName, open(imgPath, 'rb'), 'image/jpeg')
+        'file': (img_name, open(img_path, 'rb'), 'image/jpeg')
     }
     data = {
         'tuid': 5175429989,
         'st': cur_headers['X-XSRF-TOKEN']
     }
     logging.info('Sending Images...')
-    r = s.post(SEND_IMG,files=files,params=data,headers=cur_headers).json()
+    r = s.post(SEND_IMG, files=files, params=data, headers=cur_headers).json()
     if r['ok'] != 1:
         logging.warning('Headers are invalid, renewing now...')
         new = __renew_headers()
@@ -91,12 +92,13 @@ def __sendImg(imgPath:str) -> str:
         r = s.post(SEND_IMG, files=files, params=data, headers=new).json()
     return r['data']['fids']
 
-def __getResponse(sendingTimestamp:int,sleep:int) -> str:
+
+def __get_response(send_ts: (int, float), sleep: int) -> str:
     """
         get records based on timestamp.
         check the timestamp in json one by one
         if the timestamp in json is larger than the sendingTimeStamp, collect, otherwise discard
-        :param  sendingTimeStamp: timestamp calculated by system when sending a message
+        :param  send_ts: timestamp calculated by system when sending a message
                 sleep:the seconds of sleep in main thread. default: chat only with text:1s; chat with image:7s
         :return: response of xiaoIce separated by \n
     """
@@ -117,19 +119,15 @@ def __getResponse(sendingTimestamp:int,sleep:int) -> str:
         response_messages = []
         for i in range(len(messages)):
             # calculate timestamp
-            receivedTimeFormated = messages[i]['created_at'].split(' ')
             # Sat May 09 00:14:57 2020 => 1588954497
-            receivedTimeFormated = receivedTimeFormated[0] + ' ' +receivedTimeFormated[1] + ' '\
-                                    + receivedTimeFormated[2] + ' ' + receivedTimeFormated[3] + ' '\
-                                    + receivedTimeFormated[5]
-            receivedTimeStamp = int(time.mktime(time.strptime(receivedTimeFormated,'%a %b %d %H:%M:%S %Y')))
-            if messages[i]['sender_id'] == 5175429989 and receivedTimeStamp >= sendingTimestamp:
+            recv_ts = time.mktime(time.strptime(messages[i]['created_at'], '%a %b %d %H:%M:%S %z %Y'))
+            if messages[i]['sender_id'] == 5175429989 and recv_ts >= send_ts:
                 logging.info('Fetch message: {}'.format(messages[i]['text']))
                 response_messages.append(messages[i])
         if len(response_messages) != 0:
             break
         polling_count += 1
-        time.sleep(random.random())
+        time.sleep(random.random() * 2)
 
     response_messages.reverse()
 
@@ -144,66 +142,51 @@ def __getResponse(sendingTimestamp:int,sleep:int) -> str:
     return response_message
 
 
-
 def chat(msg: str) -> str:
     """
     chat program
     :param msg: message send to xiaoice
     :return: her response
     """
-    sendingTimeStamp = int(time.time())
-    logging.info('Getting headers from headers.txt')
-    cur_headers = __read_headers()
-    data = dict(uid=5175429989,
-                content=msg,
-                st=cur_headers.get('X-XSRF-TOKEN'))
+    send_ts = time.time()
+    send_msg(msg=msg)
+    resp_msg = __get_response(send_ts, 2)
+    logging.info('Get Response message: {}'.format(resp_msg))
+    return resp_msg
 
-    logging.info('Sending messages...')
-    r = s.post(SEND, headers=cur_headers, data=data).json()
-    logging.info('Server response: {}'.format(r))
 
-    if r.get('ok') != 1:
-        logging.warning('Headers are invalid, renewing now...')
-        new = __renew_headers()
-        data = dict(uid=5175429989,
-                    content=msg,
-                    st=new.get('X-XSRF-TOKEN'))
-
-        sub = s.post(SEND, headers=new, data=data).json()
-        logging.warning(sub)
-    responseMsg = __getResponse(sendingTimeStamp, 1)
-    logging.info('Get Response message: {}'.format(responseMsg))
-    return responseMsg
-
-def chatWithImg(imgPath:str) -> str:
+def chat_with_img(img_path: str) -> str:
     """
     chat xiaoice with image
-    :param imgPath: the path of image
+    :param img_path: the path of image
     :return: her response
     """
+    send_ts = time.time()
+    send_msg(img_path=img_path)
+
+    resp_msg = __get_response(send_ts, 2)
+    logging.info('Get Response message: {}'.format(resp_msg))
+    return resp_msg
+
+
+def send_msg(msg=None, img_path=None):
     logging.info('Getting headers from headers.txt')
-    sendingTimeStamp = int(time.time())
-    fids = __sendImg(imgPath)
     cur_headers = __read_headers()
-    data = dict(uid=5175429989,
-                fids=fids,
-                st=cur_headers.get('X-XSRF-TOKEN'))
+    data = dict(uid=5175429989, st=cur_headers.get('X-XSRF-TOKEN'))
+
+    if img_path is not None:
+        data.update(fids=__send_img(img_path))
+    else:
+        data.update(content=msg)
+
     logging.info('Sending messages...')
     r = s.post(SEND, headers=cur_headers, data=data).json()
     logging.info('Server response: {}'.format(r))
     if r.get('ok') != 1:
         logging.warning('Headers are invalid, renewing now...')
         new = __renew_headers()
-        data = dict(uid=5175429989,
-                    fids=fids,
-                    st=new.get('X-XSRF-TOKEN'))
-
         sub = s.post(SEND, headers=new, data=data).json()
         logging.warning(sub)
-
-    responseMsg = __getResponse(sendingTimeStamp,7)
-    logging.info('Get Response message: {}'.format(responseMsg))
-    return responseMsg
 
 
 def __remove_bad_html(msg: str) -> str:
@@ -228,5 +211,5 @@ def __remove_bad_html(msg: str) -> str:
 
 if __name__ == '__main__':
     # res = chat('好好好我错了')
-    res = chatWithImg('assets/stars.jpg')
+    res = chat_with_img('assets/stars.jpg')
     print(res)
