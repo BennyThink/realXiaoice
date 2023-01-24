@@ -1,6 +1,8 @@
 # realXiaoice
 真正唯一可用的微软小冰API
 
+**[已经无法使用了，小冰不会再响应私信。](https://github.com/BennyThink/realXiaoice/issues/11)**
+
 来源为新浪微博
 
 # 环境
